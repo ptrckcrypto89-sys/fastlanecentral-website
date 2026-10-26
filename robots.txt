@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /fastlanecentral-website/
+Sitemap: https://ptrckcrypto89-sys.github.io/fastlanecentral-website/sitemap.xml
