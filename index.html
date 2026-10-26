@@ -71,7 +71,62 @@
     @media(max-width:760px){.external-ad-creative{padding:20px 18px}.external-ad-creative h3{font-size:23px}}
   </style>
   <link rel="canonical" href="https://fastlanecentral.com/">
-<style>.legal-nav{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}.legal-nav a{color:inherit;text-underline-offset:3px}.legal-nav a:focus-visible{outline:3px solid #ef704b;outline-offset:3px}</style><style>.fl-products{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.fl-products .box{background:#fffefa;border:1px solid #d9ddd4;border-radius:18px;padding:20px}.fl-products .cover{width:100%;height:160px;object-fit:contain}.fl-products .btn{display:inline-block;background:#ef704b;padding:12px 17px;border-radius:25px;text-decoration:none;margin-top:9px;font-weight:700}.fl-products .tag{display:inline-block;color:#2f5a49;background:#e2f0e6;border-radius:99px;padding:4px 10px;font-size:12px;font-weight:750}</style></head>
+<style>.legal-nav{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}.legal-nav a{color:inherit;text-underline-offset:3px}.legal-nav a:focus-visible{outline:3px solid #ef704b;outline-offset:3px}</style><style>.fl-products{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.fl-products .box{background:#fffefa;border:1px solid #d9ddd4;border-radius:18px;padding:20px}.fl-products .cover{width:100%;height:160px;object-fit:contain}.fl-products .btn{display:inline-block;background:#ef704b;padding:12px 17px;border-radius:25px;text-decoration:none;margin-top:9px;font-weight:700}.fl-products .tag{display:inline-block;color:#2f5a49;background:#e2f0e6;border-radius:99px;padding:4px 10px;font-size:12px;font-weight:750}</style>
+<!-- Fast Lane Central: optional Google Analytics 4; loads only on visitor consent. -->
+<script>
+(function() {
+  'use strict';
+  var KEY = 'fastlane_ga_consent_v1';
+  var ID = 'G-1Q6HTWK42K';
+  function stored() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function persist(value) { try { localStorage.setItem(KEY, value); } catch (e) {} }
+  function loadAnalytics() {
+    if (window.__fastlaneGA4Loaded) return;
+    window.__fastlaneGA4Loaded = true;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function() { window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.gtag('config', ID, { send_page_view: true, allow_google_signals: false, allow_ad_personalization_signals: false });
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(ID);
+    document.head.appendChild(script);
+    document.addEventListener('submit', function(ev) {
+      var form = ev.target;
+      if (form && form.tagName === 'FORM' && /^https:\/\/(?:www\.)?payhip\.com\/b\//i.test(form.action)) {
+        window.gtag('event', 'begin_checkout', { checkout_provider: 'Payhip', transport_type: 'beacon' });
+      }
+    }, true);
+  }
+  function promptChoice() {
+    if (document.getElementById('fastlane-analytics-choice')) return;
+    var el = document.createElement('section');
+    el.id = 'fastlane-analytics-choice';
+    el.setAttribute('role', 'region');
+    el.setAttribute('aria-label', 'Optional visitor analytics');
+    el.style.cssText = 'position:fixed;bottom:14px;left:14px;right:14px;max-width:460px;z-index:2147483645;background:#112322;color:#fffefa;border:1px solid #497464;border-radius:12px;padding:18px;box-shadow:0 12px 38px #0005;font:14px/1.5 system-ui,sans-serif';
+    el.innerHTML = '<strong style="font-size:16px">Website analytics</strong><p style="margin:9px 0 15px">Allow optional Google Analytics to measure visits and improve our website? No advertising cookies are required.</p><div style="display:flex;gap:9px;flex-wrap:wrap"><button type="button" id="fl-ga-allow" style="border:0;background:#ef704b;color:#112322;border-radius:7px;padding:9px 13px;font:700 13px system-ui;cursor:pointer">Allow analytics</button><button type="button" id="fl-ga-decline" style="background:transparent;color:#fffefa;border:1px solid #c1d2cb;border-radius:7px;padding:9px 13px;font:700 13px system-ui;cursor:pointer">Decline</button><a href="/cookie-policy.html" style="color:#c6eee1;align-self:center">Cookie policy</a></div>';
+    document.body.appendChild(el);
+    document.getElementById('fl-ga-allow').addEventListener('click', function() {
+      persist('accepted'); el.remove(); loadAnalytics();
+    });
+    document.getElementById('fl-ga-decline').addEventListener('click', function() {
+      persist('declined'); el.remove(); if (window.__fastlaneGA4Loaded) location.reload();
+    });
+  }
+  function setup() {
+    var pref = document.getElementById('fastlane-analytics-settings');
+    if (pref) pref.addEventListener('click', promptChoice);
+    var choice = stored();
+    if (choice === 'accepted') loadAnalytics();
+    else if (choice !== 'declined') promptChoice();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
+  else setup();
+})();
+</script>
+
+</head>
 <body>
   <div class="wrap">
     <header>
