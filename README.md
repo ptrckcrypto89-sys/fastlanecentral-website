@@ -1,1 +1,1 @@
-Fast Lane Central public static website — generated from a locally managed Python application. The editor, database, and local keys are never committed. GitHub Pages hosts this public export; Netlify is not used here.
+Fast Lane Central public export — generated from a locally managed Python application. Admin, SQLite database and local keys are never committed. Public hosting: GitHub Pages, not Netlify.
