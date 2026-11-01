@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#112322">
-  <meta name="description" content="Request a website or app project review from Fast Lane Central.">
-  <title>Website &amp; App Project Review | Fast Lane Central</title>
+  <meta name="description" content="Request a website or app project review. Share your business goal and customer workflow for an email-first scope review.">
+  <title>Start a Website or App Project | Fast Lane Central</title>
   <style>
     :root{color-scheme:light;--ink:#112322;--muted:#52615c;--paper:#f5f3ed;--white:#fffefa;--accent:#ef704b;--line:#d9ddd4;--mint:#dcebe1}
     *{box-sizing:border-box}
@@ -53,9 +53,9 @@
 <body>
   <header><div class="wrap"><a class="brand" href="/">FAST LANE CENTRAL</a></div></header>
   <main class="wrap">
-    <div class="eyebrow">Website and app project review</div>
-    <h1>What should your website do for your business?</h1>
-    <p class="intro">Tell us what your business does, who you serve, and what you want your website or app to accomplish. This form prepares an email to Fast Lane Central; it does not submit until you press Send in your email app.</p>
+    <div class="eyebrow">Email-first project review</div>
+    <h1>What business problem should the site solve?</h1>
+    <p class="intro">Tell us what your business does, where customers get stuck, and what they need to do next. We review project requests by email. This form prepares a message; it sends only when you press Send in your email app.</p>
     <form class="card" id="inquiry-form">
       <div class="grid">
         <div><label for="name">Your name</label><input id="name" name="name" autocomplete="name" required maxlength="120"></div>
@@ -63,12 +63,12 @@
       </div>
       <label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required maxlength="254">
       <label for="website">Current website (optional)</label><input id="website" name="website" type="url" inputmode="url" placeholder="https://example.com" maxlength="500">
-      <label for="project">Which part needs attention?</label>
+      <label for="project">What are you looking to build or improve?</label>
       <select id="project" name="project" required>
         <option value="">Choose one</option><option>New business website</option><option>Website redesign</option><option>Landing page</option><option>Contact or quote form</option><option>Booking or workflow feature</option><option>Custom business app</option><option>Other website or app project</option>
       </select>
-      <label for="need">How does the process work now, and where does it break down?</label>
-      <textarea id="need" name="need" required maxlength="3000" placeholder="Describe the current steps and the result you need. Do not include customer records or sensitive information."></textarea>
+      <label for="need">What is the current bottleneck and desired customer action?</label>
+      <textarea id="need" name="need" required maxlength="3000" placeholder="What happens today? Where does it break down? What should customers be able to do instead? Include tools you want to keep. Do not include sensitive information."></textarea>
       <button type="submit" data-track-event="service_inquiry_email_composer_open">Continue to email</button>
       <p class="status" id="form-status" aria-live="polite"></p>
       <p class="privacy">Your entries stay in this browser until you continue. This site does not receive or store the inquiry. Your email app opens with the details filled in; press <strong>Send</strong> there to deliver it. Do not include customer records, payment details, or sensitive information.</p>
