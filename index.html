@@ -97,50 +97,48 @@
     script.async = true;
     script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(ID);
     document.head.appendChild(script);
-    function addCampaignParameters(rawUrl) {
-      try {
-        var target = new URL(rawUrl, window.location.href);
-        var current = new URL(window.location.href);
-        ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','utm_id'].forEach(function(key) {
-          var value = current.searchParams.get(key);
-          if (value && !target.searchParams.has(key)) target.searchParams.set(key, value);
-        });
-        return target.href;
-      } catch (e) { return rawUrl; }
-    }
-    function campaignFields() {
-      var q = new URLSearchParams(window.location.search);
-      var out = {};
-      ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','utm_id'].forEach(function(key) {
-        var value = q.get(key);
-        if (value) out[key] = value;
-      });
-      return out;
-    }
     document.addEventListener('submit', function(ev) {
       var form = ev.target;
       if (form && form.tagName === 'FORM' && /^https:\/\/(?:www\.)?payhip\.com\/b\//i.test(form.action)) {
-        form.action = addCampaignParameters(form.action);
-        window.gtag('event', 'begin_checkout', Object.assign({
-          checkout_provider: 'Payhip',
-          product_id: form.getAttribute('data-track-product') || 'unspecified',
-          link_url: form.action,
-          transport_type: 'beacon'
-        }, campaignFields()));
+        window.gtag('event', 'begin_checkout', { checkout_provider: 'Payhip', transport_type: 'beacon' });
       }
     }, true);
     document.addEventListener('click', function(ev) {
       var link = ev.target && ev.target.closest ? ev.target.closest('[data-track-event]') : null;
-      if (!link) return;
-      link.href = addCampaignParameters(link.href);
-      window.gtag('event', link.getAttribute('data-track-event'), Object.assign({
-        link_url: link.href,
-        link_label: link.getAttribute('data-track-label') || (link.textContent || '').trim().slice(0, 100),
-        transport_type: 'beacon'
-      }, campaignFields()));
+      if (link) window.gtag('event', link.getAttribute('data-track-event'), { link_url: link.href, transport_type: 'beacon' });
     }, true);
   }
-  function promptChoice() {
+function forwardCampaignParameters(rawUrl) {
+    try {
+      var target = new URL(rawUrl, window.location.href);
+      var current = new URL(window.location.href);
+      var targetHost = target.hostname.toLowerCase();
+      var eligible = targetHost === 'fastlanecentral.com' || targetHost.endsWith('.fastlanecentral.com') ||
+        targetHost === 'payhip.com' || targetHost === 'www.payhip.com' ||
+        targetHost === 'docs.google.com';
+      if (!eligible) return target.href;
+      ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','utm_id'].forEach(function(key) {
+        var value = current.searchParams.get(key);
+        if (value && !target.searchParams.has(key)) target.searchParams.set(key, value);
+      });
+      return target.href;
+    } catch (e) { return rawUrl; }
+  }
+  document.addEventListener('submit', function(ev) {
+    var form = ev.target;
+    if (!form || form.tagName !== 'FORM') return;
+    var action = form.getAttribute('action') || form.action || '';
+    if (/^https:\/\/(?:www\.)?payhip\.com\/b\//i.test(action) ||
+        /^https:\/\/docs\.google\.com\/forms/i.test(action)) {
+      form.action = forwardCampaignParameters(action);
+    }
+  }, true);
+  document.addEventListener('click', function(ev) {
+    var link = ev.target && ev.target.closest ? ev.target.closest('a[href]') : null;
+    if (!link || !/^https?:/i.test(link.href)) return;
+    link.href = forwardCampaignParameters(link.href);
+  }, true);
+    function promptChoice() {
     if (document.getElementById('fastlane-analytics-choice')) return;
     var el = document.createElement('section');
     el.id = 'fastlane-analytics-choice';
@@ -173,7 +171,7 @@
   <div class="wrap">
     <header>
       <a class="brand" href="#top" aria-label="Fast Lane Ventures home"><span class="mark">F</span><span>FAST LANE VENTURES</span></a>
-      <nav class="nav" aria-label="Main navigation"><a href="#products">Products</a><a href="#services">Services</a><a href="#industries">Industries</a><a href="#automotive">Automotive</a><a href="#payments">Payments</a><a href="#approach">How it works</a><a class="pill" href="https://docs.google.com/forms/d/e/1FAIpQLSdeV2Kse_sU7jOR2SWN3d4mvEs1qCACij2atGxGdtXTO43YAQ/viewform?usp=pp_url&amp;entry.782233869=Homepage%3A+website%2Fapp+services+%E2%80%94+request+a+review" target="_blank" rel="noopener noreferrer" data-track-event="service_inquiry_click" data-track-label="request_a_review">Request a review</a></nav>
+      <nav class="nav" aria-label="Main navigation"><a href="#products">Products</a><a href="#services">Services</a><a href="#industries">Industries</a><a href="#automotive">Automotive</a><a href="#payments">Payments</a><a href="#approach">How it works</a><a class="pill" href="https://docs.google.com/forms/d/e/1FAIpQLSdeV2Kse_sU7jOR2SWN3d4mvEs1qCACij2atGxGdtXTO43YAQ/viewform?usp=pp_url&amp;entry.782233869=Homepage%3A+website%2Fapp+services+%E2%80%94+request+a+review" target="_blank" rel="noopener noreferrer">Request a review</a></nav>
     </header>
     <main id="top">
       <section class="hero" aria-labelledby="hero-title">
@@ -181,7 +179,7 @@
           <div class="eyebrow">Digital work, made practical</div>
           <h1 id="hero-title">Websites that win enquiries.<br><em>Apps that save time.</em></h1>
           <p class="lede">Make it easier for customers to find you, request a quote, and book your services. We build customer-focused websites, landing pages, and custom apps matched to your operations, with clear scope and realistic milestones.</p>
-          <div class="actions"><a class="button primary" href="https://docs.google.com/forms/d/e/1FAIpQLSdeV2Kse_sU7jOR2SWN3d4mvEs1qCACij2atGxGdtXTO43YAQ/viewform?usp=pp_url&amp;entry.782233869=Homepage%3A+request+a+five-minute+website%2Fapp+concept+review" target="_blank" rel="noopener noreferrer" data-track-event="service_inquiry_click" data-track-label="request_a_5_minute_review">Request a 5-minute review</a><a class="button secondary" href="#services">See what we build</a></div>
+          <div class="actions"><a class="button primary" href="https://docs.google.com/forms/d/e/1FAIpQLSdeV2Kse_sU7jOR2SWN3d4mvEs1qCACij2atGxGdtXTO43YAQ/viewform?usp=pp_url&amp;entry.782233869=Homepage%3A+request+a+five-minute+website%2Fapp+concept+review" target="_blank" rel="noopener noreferrer">Request a 5-minute review</a><a class="button secondary" href="#services">See what we build</a></div>
           <p class="note">Send your current website or project idea. We reply by email with a practical next step. No phone call required.</p>
         </div>
         <div class="visual" aria-hidden="true"><div class="browser"><div class="browser-top"><i class="dot"></i><i class="dot"></i><i class="dot"></i></div><div class="browser-content"><div class="tiny-label">BUILT AROUND YOUR BUSINESS</div><div class="mock-title">Make it easy<br>to say yes.</div><div class="mock-copy">Clear information, a confident first impression, and a direct next step for your customers.</div><div class="mock-button">GET STARTED</div><div class="mock-grid"><div class="mock-box"></div><div class="mock-box"></div></div></div></div><div class="stamp"><strong>Built to fit the requirements.</strong>Scope and timeline shaped around your project.</div></div>
@@ -204,7 +202,7 @@
             <p class="external-ad-merchant">BLUEPRINT DIGITAL COMPANY · PAYHIP</p>
             <h3>Digital PDF<br>downloads</h3>
             <p>Browse a separate selection of downloadable guides and workbooks on Payhip.</p>
-            <a href="https://payhip.com/BlueprintDigitalCompany" target="_blank" rel="noopener noreferrer" aria-label="Browse Blueprint Digital Company's separate Payhip storefront in a new tab" data-track-event="payhip_storefront_click" data-track-label="homepage_storefront">Visit PDF storefront <span aria-hidden="true">↗</span></a><p class="payment-footnote"><strong>Digital downloads: final sale after checkout acknowledgment and delivery, except where required by law.</strong> <a href="/refund-policy.html">Read the refund policy</a> and <a href="/terms.html">purchase terms</a> before buying.</p>
+            <a href="https://payhip.com/BlueprintDigitalCompany" target="_blank" rel="noopener noreferrer" aria-label="Browse Blueprint Digital Company's separate Payhip storefront in a new tab">Visit PDF storefront <span aria-hidden="true">↗</span></a><p class="payment-footnote"><strong>Digital downloads: final sale after checkout acknowledgment and delivery, except where required by law.</strong> <a href="/refund-policy.html">Read the refund policy</a> and <a href="/terms.html">purchase terms</a> before buying.</p>
           </div>
           <p class="external-ad-disclaimer">External advertisement only. These PDFs are not Fast Lane services, products, or project deliverables. Purchases take place on Payhip.</p>
         </div>
@@ -212,7 +210,7 @@
       </div>
       <section id="industries" aria-labelledby="industries-title"><div class="section-head"><div class="kicker">Who we help</div><h2 id="industries-title">Purpose-built workflows for service businesses.</h2><p>Make it easier to request a quote, book a job, and follow up on enquiries.</p></div><div class="cards"><article class="card"><div class="num">HOME SERVICES</div><h3>HVAC Companies</h3><p>Capture mobile service requests, appointment needs, and maintenance enquiries.</p><a class="service-link" href="/hvac/">Explore HVAC solutions →</a></article><article class="card"><div class="num">LOCAL TRADES</div><h3>Plumbing &amp; Trades</h3><p>Separate emergency requests, estimates, and project enquiries with better intake.</p><a class="service-link" href="/plumbing/">Explore plumbing solutions →</a></article><article class="card"><div class="num">B2B OPERATIONS</div><h3>Trucking &amp; Logistics</h3><p>Connect shipment enquiries, carrier onboarding, and internal dispatch workflows.</p><a class="service-link" href="/logistics/">Explore logistics solutions →</a></article></div></section><section id="automotive" aria-labelledby="automotive-title">
         <div class="auto">
-          <div><div class="kicker">Automotive technology</div><h2 id="automotive-title">Diagnostic software built around the full vehicle picture.</h2><p>Fast Lane Ventures develops custom automotive software that can bring trouble codes, live data, symptoms, and service history into one diagnostic workflow. Projects can help teams organize evidence, prioritize likely fault paths, monitor vehicle health, and plan maintenance—from shop tools to connected multi-vehicle systems.</p><p class="auto-note">Diagnostic decision support is scoped to the available vehicle data and validated project requirements.</p><a class="button primary" href="https://docs.google.com/forms/d/e/1FAIpQLSdeV2Kse_sU7jOR2SWN3d4mvEs1qCACij2atGxGdtXTO43YAQ/viewform?usp=pp_url&amp;entry.782233869=Homepage%3A+automotive+diagnostics+or+software+enquiry" target="_blank" rel="noopener noreferrer" data-track-event="service_inquiry_click" data-track-label="discuss_an_automotive_project">Discuss an automotive project</a></div>
+          <div><div class="kicker">Automotive technology</div><h2 id="automotive-title">Diagnostic software built around the full vehicle picture.</h2><p>Fast Lane Ventures develops custom automotive software that can bring trouble codes, live data, symptoms, and service history into one diagnostic workflow. Projects can help teams organize evidence, prioritize likely fault paths, monitor vehicle health, and plan maintenance—from shop tools to connected multi-vehicle systems.</p><p class="auto-note">Diagnostic decision support is scoped to the available vehicle data and validated project requirements.</p><a class="button primary" href="https://docs.google.com/forms/d/e/1FAIpQLSdeV2Kse_sU7jOR2SWN3d4mvEs1qCACij2atGxGdtXTO43YAQ/viewform?usp=pp_url&amp;entry.782233869=Homepage%3A+automotive+diagnostics+or+software+enquiry" target="_blank" rel="noopener noreferrer">Discuss an automotive project</a></div>
           <div class="auto-details">
             <div class="auto-item"><strong>OBD-II, ECU &amp; CAN data</strong><span>Bring in trouble codes, freeze-frame, RPM and load, fuel pressure and trims, ignition and misfire, airflow, temperature, voltage, and throttle signals.</span></div>
             <div class="auto-item"><strong>Multi-signal fault analysis</strong><span>Correlate codes, symptoms, and live operating data to prioritize probable causes and the next diagnostic checks.</span></div>
@@ -223,7 +221,7 @@
           </div>
         </div>
       </section>
-      <section id="products" aria-labelledby="fastlane-products-heading"><div class="section-head"><div class="kicker">Digital products</div><h2 id="fastlane-products-heading">Business software built for real workflows.</h2><p>Downloadable tools for organizing quotes, customers, projects and appointments. Every listing states what is included before checkout.</p></div><div class="fl-products"><article class="box"><span class="tag">Cleaning</span><h3>CleanOps Pro</h3><p>Cleaning business CRM and job estimate workspace</p><p class="meta">Organize cleaning clients, job records, customizable estimates and manual data backups.</p><a class="btn" href="/products/cleanops-pro/" data-track-event="product_detail_click">View product &amp; purchase terms</a></article><article class="box"><img class="cover" loading="lazy" alt="StudioFlow digital product cover" src="/assets/covers/studioflow-cover.png"><span class="tag">Photography</span><h3>StudioFlow</h3><p>Photography client CRM and project timeline workspace</p><p class="meta">Keep client inquiries, project details, timelines and local records organized.</p><a class="btn" href="/products/studioflow/" data-track-event="product_detail_click">View product &amp; purchase terms</a></article><article class="box"><img class="cover" loading="lazy" alt="Lash ReturnFlow digital product cover" src="/assets/covers/lash-returnflow-cover.png"><span class="tag">Beauty</span><h3>Lash ReturnFlow</h3><p>Lash technician CRM and rebooking planner</p><p class="meta">Record lash client details, appointments, deposits and planned return visits.</p><a class="btn" href="/products/lash-returnflow/" data-track-event="product_detail_click">View product &amp; purchase terms</a></article><article class="box"><img class="cover" loading="lazy" alt="CleanQuote digital product cover" src="/assets/covers/cleanquote-cover.png"><span class="tag">Cleaning</span><h3>CleanQuote</h3><p>Cleaning quote and margin calculator</p><p class="meta">Create cleaning estimates with editable labor, travel, supply and overhead assumptions.</p><a class="btn" href="/products/cleanquote/" data-track-event="product_detail_click">View product &amp; purchase terms</a></article><article class="box"><img class="cover" loading="lazy" alt="ClientFlow Starter digital product cover" src="/assets/covers/clientflow-starter-cover.png"><span class="tag">Business</span><h3>ClientFlow Starter</h3><p>Client intake CRM and project organizer</p><p class="meta">Track intake details, project stages and the next client follow-up action.</p><a class="btn" href="/products/clientflow-starter/" data-track-event="product_detail_click">View product &amp; purchase terms</a></article></div><p class="payment-footnote">Digital downloads are final after delivery except as required by law. Review the <a href="/refund-policy.html">Final Sale Policy</a> before checkout.</p></section>
+      <section id="products" aria-labelledby="fastlane-products-heading"><div class="section-head"><div class="kicker">Digital products</div><h2 id="fastlane-products-heading">Business software built for real workflows.</h2><p>Downloadable tools for organizing quotes, customers, projects and appointments. Every listing states what is included before checkout.</p></div><div class="fl-products"><article class="box"><span class="tag">Cleaning</span><h3>CleanOps Pro</h3><p>Cleaning business CRM and job estimate workspace</p><p class="meta">Organize cleaning clients, job records, customizable estimates and manual data backups.</p><a class="btn" href="/products/cleanops-pro/">View product &amp; purchase terms</a></article><article class="box"><img class="cover" loading="lazy" alt="StudioFlow digital product cover" src="/assets/covers/studioflow-cover.png"><span class="tag">Photography</span><h3>StudioFlow</h3><p>Photography client CRM and project timeline workspace</p><p class="meta">Keep client inquiries, project details, timelines and local records organized.</p><a class="btn" href="/products/studioflow/">View product &amp; purchase terms</a></article><article class="box"><img class="cover" loading="lazy" alt="Lash ReturnFlow digital product cover" src="/assets/covers/lash-returnflow-cover.png"><span class="tag">Beauty</span><h3>Lash ReturnFlow</h3><p>Lash technician CRM and rebooking planner</p><p class="meta">Record lash client details, appointments, deposits and planned return visits.</p><a class="btn" href="/products/lash-returnflow/">View product &amp; purchase terms</a></article><article class="box"><img class="cover" loading="lazy" alt="CleanQuote digital product cover" src="/assets/covers/cleanquote-cover.png"><span class="tag">Cleaning</span><h3>CleanQuote</h3><p>Cleaning quote and margin calculator</p><p class="meta">Create cleaning estimates with editable labor, travel, supply and overhead assumptions.</p><a class="btn" href="/products/cleanquote/">View product &amp; purchase terms</a></article><article class="box"><img class="cover" loading="lazy" alt="ClientFlow Starter digital product cover" src="/assets/covers/clientflow-starter-cover.png"><span class="tag">Business</span><h3>ClientFlow Starter</h3><p>Client intake CRM and project organizer</p><p class="meta">Track intake details, project stages and the next client follow-up action.</p><a class="btn" href="/products/clientflow-starter/">View product &amp; purchase terms</a></article></div><p class="payment-footnote">Digital downloads are final after delivery except as required by law. Review the <a href="/refund-policy.html">Final Sale Policy</a> before checkout.</p></section>
 <section id="payments" aria-labelledby="payments-title">
         <div class="section-head"><div class="kicker">Payment options</div><h2 id="payments-title">Pay against an approved project invoice.</h2><p>Use the amount and reference shown on your Fast Lane invoice. For now, payment is made to Patrick Austin while LLC banking is being set up.</p></div>
         <div class="payment-grid">
@@ -236,7 +234,7 @@
         <p class="payment-footnote">Before sending payment, verify the invoice amount, payment method, and payee name. Work begins after the project scope and payment terms are confirmed in writing.</p>
       </section>
       <section id="approach" aria-labelledby="approach-title">
-        <div class="process"><div><div class="kicker">How it works</div><h2 id="approach-title">Clear scope. A timeline that fits.</h2><p>We start with your goals, features, workflows, and integrations. The delivery timeline is set to match the project's complexity and testing needs.</p><a class="button primary" href="https://docs.google.com/forms/d/e/1FAIpQLSdeV2Kse_sU7jOR2SWN3d4mvEs1qCACij2atGxGdtXTO43YAQ/viewform?usp=pp_url&amp;entry.782233869=Homepage%3A+new+website+or+custom+app+project+enquiry" target="_blank" rel="noopener noreferrer" data-track-event="service_inquiry_click" data-track-label="describe_your_project">Describe your project</a></div><div class="steps"><div class="step"><strong>01. Define</strong><span>Share the problem and what a successful result should do.</span></div><div class="step"><strong>02. Scope</strong><span>Agree on deliverables, requirements, and a realistic timeline before work begins.</span></div><div class="step"><strong>03. Build</strong><span>Review progress against the agreed scope and priorities.</span></div><div class="step"><strong>04. Hand off</strong><span>Receive the finished work and a clear path for next steps.</span></div></div></div>
+        <div class="process"><div><div class="kicker">How it works</div><h2 id="approach-title">Clear scope. A timeline that fits.</h2><p>We start with your goals, features, workflows, and integrations. The delivery timeline is set to match the project's complexity and testing needs.</p><a class="button primary" href="https://docs.google.com/forms/d/e/1FAIpQLSdeV2Kse_sU7jOR2SWN3d4mvEs1qCACij2atGxGdtXTO43YAQ/viewform?usp=pp_url&amp;entry.782233869=Homepage%3A+new+website+or+custom+app+project+enquiry" target="_blank" rel="noopener noreferrer">Describe your project</a></div><div class="steps"><div class="step"><strong>01. Define</strong><span>Share the problem and what a successful result should do.</span></div><div class="step"><strong>02. Scope</strong><span>Agree on deliverables, requirements, and a realistic timeline before work begins.</span></div><div class="step"><strong>03. Build</strong><span>Review progress against the agreed scope and priorities.</span></div><div class="step"><strong>04. Hand off</strong><span>Receive the finished work and a clear path for next steps.</span></div></div></div>
       </section>
       <section class="youtube-community" aria-labelledby="youtube-community-title">
         <div>
