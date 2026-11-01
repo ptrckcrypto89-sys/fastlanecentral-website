@@ -103,6 +103,10 @@
         window.gtag('event', 'begin_checkout', { checkout_provider: 'Payhip', transport_type: 'beacon' });
       }
     }, true);
+    document.addEventListener('click', function(ev) {
+      var link = ev.target && ev.target.closest ? ev.target.closest('[data-track-event]') : null;
+      if (link) window.gtag('event', link.getAttribute('data-track-event'), { link_url: link.href, transport_type: 'beacon' });
+    }, true);
   }
   function promptChoice() {
     if (document.getElementById('fastlane-analytics-choice')) return;
@@ -208,7 +212,7 @@
           <h2 id="youtube-community-title">The Hidden Deal on YouTube</h2>
           <p>Explore the channel and subscribe to follow along with new videos.</p>
         </div>
-        <a class="button primary" href="https://www.youtube.com/@TheHiddenDealHQ" target="_blank" rel="noopener noreferrer" aria-label="Subscribe to The Hidden Deal on YouTube">Subscribe on YouTube <span aria-hidden="true">↗</span></a>
+        <a class="button primary" href="https://www.youtube.com/@TheHiddenDealHQ" target="_blank" rel="noopener noreferrer" aria-label="Subscribe to The Hidden Deal on YouTube" data-track-event="youtube_subscribe_click">Subscribe on YouTube <span aria-hidden="true">↗</span></a>
       </section>
       <section aria-labelledby="contact-title"><div class="cta"><div><div class="kicker">Start here</div><h2 id="contact-title">What should work better?</h2><p>Send the goal, your current website or process, and any deadline you have.</p></div><a class="button primary" href="https://docs.google.com/forms/d/e/1FAIpQLSdeV2Kse_sU7jOR2SWN3d4mvEs1qCACij2atGxGdtXTO43YAQ/viewform?usp=pp_url&amp;entry.782233869=Homepage%3A+contact+via+project+enquiry+form" target="_blank" rel="noopener noreferrer">Email Fast Lane</a></div></section>
     </main>

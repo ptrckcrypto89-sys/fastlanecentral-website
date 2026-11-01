@@ -26,6 +26,10 @@
         window.gtag('event', 'begin_checkout', { checkout_provider: 'Payhip', transport_type: 'beacon' });
       }
     }, true);
+    document.addEventListener('click', function(ev) {
+      var link = ev.target && ev.target.closest ? ev.target.closest('[data-track-event]') : null;
+      if (link) window.gtag('event', link.getAttribute('data-track-event'), { link_url: link.href, transport_type: 'beacon' });
+    }, true);
   }
   function promptChoice() {
     if (document.getElementById('fastlane-analytics-choice')) return;
