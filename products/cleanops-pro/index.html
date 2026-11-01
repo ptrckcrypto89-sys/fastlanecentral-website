@@ -19,50 +19,48 @@
     script.async = true;
     script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(ID);
     document.head.appendChild(script);
-    function addCampaignParameters(rawUrl) {
-      try {
-        var target = new URL(rawUrl, window.location.href);
-        var current = new URL(window.location.href);
-        ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','utm_id'].forEach(function(key) {
-          var value = current.searchParams.get(key);
-          if (value && !target.searchParams.has(key)) target.searchParams.set(key, value);
-        });
-        return target.href;
-      } catch (e) { return rawUrl; }
-    }
-    function campaignFields() {
-      var q = new URLSearchParams(window.location.search);
-      var out = {};
-      ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','utm_id'].forEach(function(key) {
-        var value = q.get(key);
-        if (value) out[key] = value;
-      });
-      return out;
-    }
     document.addEventListener('submit', function(ev) {
       var form = ev.target;
       if (form && form.tagName === 'FORM' && /^https:\/\/(?:www\.)?payhip\.com\/b\//i.test(form.action)) {
-        form.action = addCampaignParameters(form.action);
-        window.gtag('event', 'begin_checkout', Object.assign({
-          checkout_provider: 'Payhip',
-          product_id: form.getAttribute('data-track-product') || 'unspecified',
-          link_url: form.action,
-          transport_type: 'beacon'
-        }, campaignFields()));
+        window.gtag('event', 'begin_checkout', { checkout_provider: 'Payhip', transport_type: 'beacon' });
       }
     }, true);
     document.addEventListener('click', function(ev) {
       var link = ev.target && ev.target.closest ? ev.target.closest('[data-track-event]') : null;
-      if (!link) return;
-      link.href = addCampaignParameters(link.href);
-      window.gtag('event', link.getAttribute('data-track-event'), Object.assign({
-        link_url: link.href,
-        link_label: link.getAttribute('data-track-label') || (link.textContent || '').trim().slice(0, 100),
-        transport_type: 'beacon'
-      }, campaignFields()));
+      if (link) window.gtag('event', link.getAttribute('data-track-event'), { link_url: link.href, transport_type: 'beacon' });
     }, true);
   }
-  function promptChoice() {
+function forwardCampaignParameters(rawUrl) {
+    try {
+      var target = new URL(rawUrl, window.location.href);
+      var current = new URL(window.location.href);
+      var targetHost = target.hostname.toLowerCase();
+      var eligible = targetHost === 'fastlanecentral.com' || targetHost.endsWith('.fastlanecentral.com') ||
+        targetHost === 'payhip.com' || targetHost === 'www.payhip.com' ||
+        targetHost === 'docs.google.com';
+      if (!eligible) return target.href;
+      ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','utm_id'].forEach(function(key) {
+        var value = current.searchParams.get(key);
+        if (value && !target.searchParams.has(key)) target.searchParams.set(key, value);
+      });
+      return target.href;
+    } catch (e) { return rawUrl; }
+  }
+  document.addEventListener('submit', function(ev) {
+    var form = ev.target;
+    if (!form || form.tagName !== 'FORM') return;
+    var action = form.getAttribute('action') || form.action || '';
+    if (/^https:\/\/(?:www\.)?payhip\.com\/b\//i.test(action) ||
+        /^https:\/\/docs\.google\.com\/forms/i.test(action)) {
+      form.action = forwardCampaignParameters(action);
+    }
+  }, true);
+  document.addEventListener('click', function(ev) {
+    var link = ev.target && ev.target.closest ? ev.target.closest('a[href]') : null;
+    if (!link || !/^https?:/i.test(link.href)) return;
+    link.href = forwardCampaignParameters(link.href);
+  }, true);
+    function promptChoice() {
     if (document.getElementById('fastlane-analytics-choice')) return;
     var el = document.createElement('section');
     el.id = 'fastlane-analytics-choice';
