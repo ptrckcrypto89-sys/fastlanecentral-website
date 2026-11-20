@@ -149,11 +149,14 @@
         headers:{"Content-Type":"application/json","Accept":"application/json"},
         body:JSON.stringify(payload)
       });
-      const result=await response.json();
-      if(!response.ok||!(result.success===true||result.success==="true"))throw new Error(result.message||"The form service did not accept the inquiry.");
+      const raw=await response.text();
+      let result;
+      try{result=JSON.parse(raw);}catch(parseError){throw new Error("Form service returned HTTP "+response.status+" with a non-JSON response: "+raw.slice(0,180));}
+      if(!response.ok||!(result.success===true||result.success==="true"))throw new Error("Form service returned HTTP "+response.status+": "+(result.message||raw.slice(0,180)));
       status.textContent="Inquiry submitted. Fast Lane Central will review it and follow up by email.";
       form.reset();
     }catch(error){
+      console.error("Fast Lane Central inquiry submission error:",error);
       status.textContent="Online submission failed. Use the email fallback below to send your inquiry.";
       fallback.hidden=false;
     }finally{
